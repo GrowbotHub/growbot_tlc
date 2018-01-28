@@ -7,11 +7,18 @@ from growbot_msg.msg import Wheel_target
 from growbot_msg.msg import Wheel_moving
 from growbot_msg.msg import ImPro_trig
 from growbot_msg.msg import ImPro_res
+from growbot_msg.msg import User_cmd
+import constants as cst
 
 # Global variable
 pub_robCmd = 0
 pub_wheelTarget = 0
 pub_imProTrig = 0
+
+lastLsShelf = cst._SHELFID_LS1
+lastVeggiShelf = cst._SHELFID_SALAD
+
+lastCmdDone = True
 
 
 def ripnessCheck(data):
@@ -25,34 +32,82 @@ def ripnessCheck(data):
     pass
 
 
-def pickingUp(data):
-    #rob arm go safe
-    #wait done moving
-    #move to shelf
-    #wait done moving
-    #rob arm pick up 
-    #rob arm go safe
-    pass
-
-
 def imProResSaver(data):
     pass
 
 
-def wheelStateUpdate(data):
-    pass
+
+def showLunarSoil():
+    global lastCmdDone
+    global lastLsShelf
+
+    lastCmdDone = False
+    newTarget = Wheel_target()
+    if lastLsShelf == cst._SHELFID_LS1 :
+        lastLsShelf = cst._SHELFID_LS2
+        newTarget.target = cst._BASEPOS_LS2 + cst._WORK_OFFSET
+    elif lastLsShelf == cst._SHELFID_LS2 :
+        lastLsShelf = cst._SHELFID_LS1
+        newTarget.target = cst._BASEPOS_LS1 + cst._WORK_OFFSET
+
+    pub_wheelTarget.publish(newTarget)
+    msg_done = rospy.wait_for_message("/wheel/done", Wheel_moving)
+    while msg_done.isMoving == True :
+        rospy.logwarn("Revieced a isMoving == True message, expected False. Waiting for next isMoving message.")
+        msg_done = rospy.wait_for_message("/wheel/done", Wheel_moving)
+
+    # Send command to RobArm
+    # Wait for it beeing done
+    lastCmdDone = True
 
 
-def robArmStateUpdate(data):
-    pass
+def harvest():
+    global lastCmdDone
+    global lastVeggiShelf
+
+    lastCmdDone = False
+    newTarget = Wheel_target()
+    if lastVeggiShelf == cst._SHELFID_SALAD :
+        lastVeggiShelf = cst._SHELFID_RADISH
+        newTarget.target = cst._BASEPOS_RADISH + cst._WORK_OFFSET
+    elif lastVeggiShelf == cst._SHELFID_RADISH :
+        lastVeggiShelf = cst._SHELFID_SALAD
+        newTarget.target = cst._BASEPOS_SALAD + cst._WORK_OFFSET
+
+    pub_wheelTarget.publish(newTarget)
+    msg_done = rospy.wait_for_message("/wheel/done", Wheel_moving)
+    while msg_done.isMoving == True :
+        rospy.logwarn("Revieced a isMoving == True message, expected False. Waiting for next isMoving message.")
+        msg_done = rospy.wait_for_message("/wheel/done", Wheel_moving)
+
+    # Send command to RobArm
+    # Wait for it beeing done
+    lastCmdDone = True
+
+
+
+def usrCmd(data):
+    rospy.loginfo("Usr command recieved")
+    if not lastCmdDone :
+        rospy.logwarn("Last user command still executing, new command ignored.")
+        return
+    
+    if data.cmdID == cst._CMDID_LS : # show lunar soil
+        showLunarSoil()
+    elif data.cmdID == cst._CMDID_HARVEST :
+        harvest()
+    else :
+        rospy.logerr("Unkown user command recieved")
+
+
 
 def subscribe():
     rospy.Subscriber("/alarm/check", Alarm, ripnessCheck)
-    rospy.Subscriber("/alarm/pickUp", Alarm, pickingUp)
+    #rospy.Subscriber("/alarm/pickUp", Alarm, harvest)
     rospy.Subscriber("/imPro/res", ImPro_res, imProResSaver)
-    rospy.Subscriber("/wheel/moving", Wheel_moving, wheelStateUpdate)
-    rospy.Subscriber("/robArm/moving", RobArm_moving, robArmStateUpdate)
-
+    #rospy.Subscriber("/wheel/done", Wheel_moving, wheelStateUpdate)
+    #rospy.Subscriber("/robArm/moving", RobArm_moving, robArmStateUpdate)
+    rospy.Subscriber('/usr/cmd', User_cmd, usrCmd)
 
 def initPublisher():
     global pub_robCmd
