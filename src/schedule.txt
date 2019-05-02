@@ -1,0 +1,9 @@
+# Typical schedule file
+# Parser does not support empty fields
+# It is assumed the schedule entries are in chronological order
+# <ISO 8601 Local Date and Time> <cmd> <param1(ShelfID)> <param2(PotID)>
+# Do not include timezone in Date Time, it confuses the dateutil.parser
+
+2019-05-02T18:39:10 Check 1 12
+2019-05-02T18:39:20 Check 2 1
+2019-05-02T18:39:30 Check 3 1
