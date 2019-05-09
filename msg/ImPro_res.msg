@@ -1,5 +1,5 @@
 Header header
-bool result
+bool decision
+float32 probability
 int8 shelfID
 int8 potID
-time pictureTime
