@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 import rospy
-from growbot_tlc.msg import Alarm
-from growbot_tlc.msg import RobArm_cmd
-from growbot_tlc.msg import RobArm_moving
-from growbot_tlc.msg import Wheel_target
-from growbot_tlc.msg import Wheel_moving
-from growbot_tlc.msg import ImPro_trig
-from growbot_tlc.msg import ImPro_res
+from growbot_msg.msg import Alarm
+from growbot_msg.msg import RobArm_cmd
+from growbot_msg.msg import RobArm_moving
+from growbot_msg.msg import Wheel_target
+from growbot_msg.msg import Wheel_moving
+from growbot_msg.msg import ImPro_trig
+from growbot_msg.msg import ImPro_res
 
 # Global variable
 pub_robCmd = 0

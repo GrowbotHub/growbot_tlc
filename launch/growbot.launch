@@ -1,0 +1,16 @@
+<launch>
+	<machine name="tlc" address="localhost" />
+	<machine name="rpi" address="192.168.1.37" user="pi" password="raspberry" env-loader="/home/pi/ros_catkin_ws/devel/env.sh" timeout="20" />
+
+
+	<node machine="tlc" pkg="growbot_tlc" type="main.py" name="main" output="log"/>
+
+	<node machine="rpi" pkg="growbot_rpi" type="pos_controller.py" name="pos_controller" output="log" />
+
+	<node machine="rpi" pkg="growbot_rpi" type="sensor_interface.py" name="sensor_interface" output="log"/>
+
+	<node machine="rpi" pkg="growbot_rpi" type="gui_ressources.py" name="gui_ressources" output="log"/>
+
+	<node machine="rpi" pkg="growbot_rpi" type="server_v2.py" name="server_v2" output="log"/>
+
+</launch>
