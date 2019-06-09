@@ -17,7 +17,7 @@ pub_wheelTarget = 0
 pub_imProTrig = 0
 
 lastLsShelf = cst._SHELFID_LS1
-lastVeggiShelf = cst._SHELFID_SALAD
+lastVeggiShelf = cst._SHELFID_RADISH
 lastBringBack = False
 
 lastCmdDone = True

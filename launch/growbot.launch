@@ -15,4 +15,6 @@
 
 	<node machine="rpi" pkg="growbot_rpi" type="image_processing.py" name="image_procesing" output="log" respawn="true"/>
 
+	<node machine="rpi" pkg="growbot_rpi" type="dispenser.py" name="dispenser" output="log" respawn="true"/>
+
 </launch>
