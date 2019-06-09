@@ -1,6 +1,6 @@
 <launch>
 	<machine name="tlc" address="localhost" />
-	<machine name="rpi" address="192.168.1.37" user="pi" password="raspberry" env-loader="/home/pi/ros_catkin_ws/devel/env.sh" timeout="20" />
+	<machine name="rpi" address="192.169.1.3" user="pi" password="raspberry" env-loader="/home/pi/ros_catkin_ws/devel/env.sh" timeout="20" />
 
 
 	<node machine="tlc" pkg="growbot_tlc" type="main.py" name="main" output="screen" respawn="true"/>
@@ -12,5 +12,7 @@
 	<node machine="rpi" pkg="growbot_rpi" type="gui_ressources.py" name="gui_ressources" output="log" respawn="true"/>
 
 	<node machine="rpi" pkg="growbot_rpi" type="server_v2.py" name="server_v2" output="log" respawn="true"/>
+
+	<node machine="rpi" pkg="growbot_rpi" type="image_processing.py" name="image_procesing" output="log" respawn="true"/>
 
 </launch>
