@@ -10,6 +10,7 @@ from growbot_msg.msg import ImPro_res
 from growbot_msg.msg import User_cmd
 from growbot_msg.srv import ImPro_doImPro
 import constants as cst
+from numpy import sign
 
 # Global variable
 pub_robCmd = 0
@@ -18,7 +19,8 @@ pub_imProTrig = 0
 
 lastLsShelf = cst._SHELFID_LS1
 lastVeggiShelf = cst._SHELFID_RADISH
-lastBringBack = False
+lastBringBack = [True, True, True, True]
+
 
 lastCmdDone = True
 
@@ -60,14 +62,22 @@ def showLunarSoil():
 
     if cst._WHEEL_CONNECTED :
         newTarget = Wheel_target()
-        if lastLsShelf == cst._SHELFID_LS1 :
+        if lastLsShelf == cst._SHELFID_LS1 and lastBringBack[lastLsShelf]:
             lastLsShelf = cst._SHELFID_LS2
             newTarget.target = cst._BASEPOS_LS2 + cst._WORK_OFFSET
-        elif lastLsShelf == cst._SHELFID_LS2 :
+        elif lastLsShelf == cst._SHELFID_LS2 and lastBringBack[lastLsShelf] :
             lastLsShelf = cst._SHELFID_LS1
             newTarget.target = cst._BASEPOS_LS1 + cst._WORK_OFFSET
+        elif lastLsShelf == cst._SHELFID_LS1 and not lastBringBack[lastLsShelf]:
+            lastLsShelf = cst._SHELFID_LS1
+            newTarget.target = cst._BASEPOS_LS1 + cst._WORK_OFFSET
+        elif lastLsShelf == cst._SHELFID_LS2 and not lastBringBack[lastLsShelf] :
+            lastLsShelf = cst._SHELFID_LS2
+            newTarget.target = cst._BASEPOS_LS2 + cst._WORK_OFFSET
+
 
         pub_wheelTarget.publish(newTarget)
+        rospy.loginfo("Waiting for done")
         msg_done = rospy.wait_for_message("/wheel/done", Wheel_moving)
         while msg_done.isMoving == True :
             rospy.logwarn("Revieced a isMoving == True message, expected False. Waiting for next isMoving message.")
@@ -79,19 +89,21 @@ def showLunarSoil():
         robCmd = RobArm_cmd()
         robCmd.potID = lastPotID[lastLsShelf]
         robCmd.aero = False
-        lastBringBack = not lastBringBack
-        robCmd.bringBack = lastBringBack
-        if lastBringBack :
+        lastBringBack[lastLsShelf] = not lastBringBack[lastLsShelf]
+        robCmd.bringBack = lastBringBack[lastLsShelf]
+        if robCmd.bringBack :
             lastPotID[lastLsShelf] += 1
             if lastPotID[lastLsShelf] >= cst._TOT_POT_NBR :
                 rospy.logwarn("Out of pots ! Restarting at potID = 0")
                 lastPotID[lastLsShelf] = 0
 
+
         pub_robCmd.publish(robCmd)
-        msg_done = rospy.wait_for_message("/robArm/done", RobArm_moving)
+        rospy.loginfo("Waiting for done")
+        msg_done = rospy.wait_for_message("/robArm/moving", RobArm_moving)
         while msg_done.isMoving == True :
             rospy.logwarn("RobArm : Revieced a isMoving == True message, expected False. Waiting for next isMoving message.")
-            msg_done = rospy.wait_for_message("/robArm/done", RobArm_moving)
+            msg_done = rospy.wait_for_message("/robArm/moving", RobArm_moving)
 
     lastCmdDone = True
     rospy.loginfo("Done handeling LS")
@@ -114,6 +126,7 @@ def harvest():
             newTarget.target = cst._BASEPOS_SALAD + cst._WORK_OFFSET
 
         pub_wheelTarget.publish(newTarget)
+        rospy.loginfo("Waiting for done")
         msg_done = rospy.wait_for_message("/wheel/done", Wheel_moving)
         while msg_done.isMoving == True :
             rospy.logwarn("Wheel : Revieced a isMoving == True message, expected False. Waiting for next isMoving message.")
@@ -131,10 +144,11 @@ def harvest():
         robCmd.aero = True
         robCmd.bringBack = False
         pub_robCmd.publish(robCmd)
-        msg_done = rospy.wait_for_message("/robArm/done", RobArm_moving)
+        rospy.loginfo("Waiting for done")
+        msg_done = rospy.wait_for_message("/robArm/moving", RobArm_moving)
         while msg_done.isMoving == True :
             rospy.logwarn("RobArm : Revieced a isMoving == True message, expected False. Waiting for next isMoving message.")
-            msg_done = rospy.wait_for_message("/robArm/done", RobArm_moving)
+            msg_done = rospy.wait_for_message("/robArm/moving", RobArm_moving)
 
     lastCmdDone = True
     rospy.loginfo("Done harvesting")
