@@ -1,0 +1,9 @@
+atomic_configure
+catkin
+catkin_generated
+cmake
+CMakeFiles
+devel
+CMakeCache.txt
+cmake_install.cmake
+Makefile
